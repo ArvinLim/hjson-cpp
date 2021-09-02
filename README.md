@@ -529,6 +529,23 @@ Hjson::Value GetConfig(const char *szConfigPath) {
 }
 ```
 
+# Testing Hjson values
+
+A set of convenience member functions in `Hjson::Value` whose name
+start with `is_` enables quick extraction from an `Hjson::Value`. For
+example, to test that some `Hjson::Value hjv;` is a map with exactly
+two members `x` and `y` associated to floating point numbers you could code:
+
+```cpp
+  HJson::Value hjv = Hjson::Unmarshal(sampleText.c_str(), sampleText.size());
+  std::size_t mapsiz=0;
+  double x=0, y=0;
+  if (hjv.is_map(&mapsiz) && mapsiz == 2
+      && hjv.is_map_with_key("x") &&  hjv.is_map_with_key("y")
+      && hjv["x"].is_double(&x) &&  hjv["y"].is_double(&y)
+      do_something(x,y);
+```
+
 For a full multi-platform example application using Hjson configuration files, see the [hjson-cpp-example](https://github.com/hjson/hjson-cpp-example) template repository.
 
 # History
