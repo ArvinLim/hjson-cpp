@@ -411,6 +411,11 @@ static CommentInfo _getCommentAfter(Parser *p) {
       while (p->ch > 0 && p->ch != '\n') {
         _next(p);
       }
+	  
+      // MUST include '\n' charactor in 'after' comment,
+	  // otherwise ']' or '}' will be eaten if no seperator ',' before these comments
+      if (p->ch == '\n')
+        _next(p);
     } else if (p->ch == '/' && _peek(p, 0) == '*') {
       if (p->opt.comments) {
         ci.hasComment = true;
@@ -535,10 +540,14 @@ static Value _readArray(Parser *p) {
       ciExtra = {};
     }
     if (p->ch == ']') {
-      auto existingAfter = elem.get_comment_after();
-      _setComment(elem, &Value::set_comment_after, p, ciAfter, ciExtra);
-      if (!existingAfter.empty()) {
-        elem.set_comment_after(existingAfter + elem.get_comment_after());
+      // _setComment will not clear elem's 'after' comments
+	  // if ciAfter & ciExtra are empty, double elem's 'after' comments will appear
+      if (ciAfter.hasComment || ciExtra.hasComment) {
+        auto existingAfter = elem.get_comment_after();
+        _setComment(elem, &Value::set_comment_after, p, ciAfter, ciExtra);
+        if (!existingAfter.empty()) {
+          elem.set_comment_after(existingAfter + elem.get_comment_after());
+        }
       }
       array.push_back(elem);
       _next(p);
@@ -602,10 +611,14 @@ static Value _readObject(Parser *p, bool withoutBraces) {
       ciExtra = {};
     }
     if (p->ch == '}' && !withoutBraces) {
-      auto existingAfter = elem.get_comment_after();
-      _setComment(elem, &Value::set_comment_after, p, ciAfter, ciExtra);
-      if (!existingAfter.empty()) {
-        elem.set_comment_after(existingAfter + elem.get_comment_after());
+      // _setComment will not clear elem's 'after' comments
+	  // if ciAfter & ciExtra are empty, double elem's 'after' comments will appear
+      if (ciAfter.hasComment || ciExtra.hasComment) {
+        auto existingAfter = elem.get_comment_after();      
+        _setComment(elem, &Value::set_comment_after, p, ciAfter, ciExtra);
+        if (!existingAfter.empty()) {
+          elem.set_comment_after(existingAfter + elem.get_comment_after());
+        }
       }
       object[key].assign_with_comments(std::move(elem));
       _next(p);
