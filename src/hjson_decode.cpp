@@ -540,11 +540,15 @@ static Value _readArray(Parser *p) {
       ciExtra = {};
     }
     if (p->ch == ']') {
+      // _setComment will not clear elem's 'after' comments
+	  // if ciAfter & ciExtra are empty, double elem's 'after' comments will appear
+      if (ciAfter.hasComment || ciExtra.hasComment) {
         auto existingAfter = elem.get_comment_after();
         _setComment(elem, &Value::set_comment_after, p, ciAfter, ciExtra);
         if (!existingAfter.empty()) {
           elem.set_comment_after(existingAfter + elem.get_comment_after());
         }
+      }
       array.push_back(elem);
       _next(p);
       return array;
@@ -607,10 +611,14 @@ static Value _readObject(Parser *p, bool withoutBraces) {
       ciExtra = {};
     }
     if (p->ch == '}' && !withoutBraces) {
+      // _setComment will not clear elem's 'after' comments
+	  // if ciAfter & ciExtra are empty, double elem's 'after' comments will appear
+      if (ciAfter.hasComment || ciExtra.hasComment) {
         auto existingAfter = elem.get_comment_after();      
         _setComment(elem, &Value::set_comment_after, p, ciAfter, ciExtra);
         if (!existingAfter.empty()) {
           elem.set_comment_after(existingAfter + elem.get_comment_after());
+        }
       }
       object[key].assign_with_comments(std::move(elem));
       _next(p);
