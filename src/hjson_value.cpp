@@ -1199,9 +1199,9 @@ bool Value::deep_equal(const Value& other) const {
   {
   case Type::Vector:
     {
-      auto itA = this->prv->v->begin();
-      auto endA = this->prv->v->end();
-      auto itB = other.prv->v->begin();
+      auto itA = ((ValueVec*)(this->prv->p))->begin();
+      auto endA = ((ValueVec*)(this->prv->p))->end();
+      auto itB = ((ValueVec*)(other.prv->p))->begin();
       while (itA != endA) {
         if (!itA->deep_equal(*itB)) {
           return false;
